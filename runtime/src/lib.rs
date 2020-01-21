@@ -70,6 +70,8 @@ mod simple_event;
 
 mod single_value;
 
+mod vec_set;
+
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
 /// of data like extrinsics, allowing for them to continue syncing the network through upgrades
@@ -252,6 +254,10 @@ impl single_value::Trait for Runtime {
 	type Event = Event;
 }
 
+impl vec_set::Trait for Runtime {
+	type Event = Event;
+}
+
 construct_runtime!(
 	pub enum Runtime where
 		Block = Block,
@@ -271,6 +277,7 @@ construct_runtime!(
 		RandomnessCollectiveFlip: randomness_collective_flip::{Module, Call, Storage},
 		SimpleEventModule: simple_event::{Module, Call, Event<T>},
 		SingleValueModule: single_value::{Module, Call, Storage, Event<T>},
+		VecValueModule: vec_set::{Module, Call, Storage, Event<T>},
 	}
 );
 
