@@ -78,7 +78,7 @@ mod tests {
 	use super::{Module, Trait, RawEvent};
 
 	use sp_core::H256;
-	use frame_support::{impl_outer_origin, impl_outer_event, assert_ok, parameter_types, weights::Weight};
+	use frame_support::{impl_outer_origin, impl_outer_event, assert_err, assert_ok, parameter_types, weights::Weight};
 	use sp_runtime::{
 		traits::{BlakeTwo256, IdentityLookup}, testing::Header, Perbill,
 	};
@@ -142,17 +142,44 @@ mod tests {
     }
 
 	#[test]
-	fn it_works_for_set_value() {
+	fn it_works_for_single_value() {
 		ExtBuilder::build().execute_with(|| {
-			System::set_block_number(2);
-			assert_ok!(SingleValueModule::set_value(Origin::signed(1), 42));
 
+			let sender = Origin::signed(1);
+
+			assert_err!(SingleValueModule::get_value(sender.clone()), "value does not exists");
+			assert_err!(SingleValueModule::get_account(sender.clone()), "Account does not exists");
+
+			System::set_block_number(2);
+
+			assert_ok!(SingleValueModule::set_value(sender.clone(), 42));
 			let expected_event = TestEvent::single_value_event(
 				RawEvent::ValueSet(42, 2),
 			);
+			assert!(System::events().iter().any(|a| a.event == expected_event));
 
+			System::set_block_number(4);
+			assert_ok!(SingleValueModule::get_value(sender.clone()));
+			let expected_event = TestEvent::single_value_event(
+				RawEvent::ValueGet(42, 4),
+			);
+			assert!(System::events().iter().any(|a| a.event == expected_event));
+
+			System::set_block_number(3);
+			assert_ok!(SingleValueModule::set_account(sender.clone(), 10));
+			let expected_event = TestEvent::single_value_event(
+				RawEvent::AccountSet(10, 3),
+			);
+			assert!(System::events().iter().any(|a| a.event == expected_event));
+
+			System::set_block_number(5);
+			assert_ok!(SingleValueModule::get_account(sender.clone()));
+			let expected_event = TestEvent::single_value_event(
+				RawEvent::AccountGet(10, 5),
+			);
 			assert!(System::events().iter().any(|a| a.event == expected_event));
 
 		});
 	}
+
 }
