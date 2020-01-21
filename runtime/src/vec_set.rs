@@ -60,7 +60,7 @@ mod tests {
 	use super::{Module, Trait, RawEvent};
 
 	use sp_core::H256;
-	use frame_support::{impl_outer_origin, impl_outer_event, assert_ok, parameter_types, weights::Weight};
+	use frame_support::{impl_outer_origin, impl_outer_event, assert_ok, assert_err, parameter_types, weights::Weight};
 	use sp_runtime::{
 		traits::{BlakeTwo256, IdentityLookup}, testing::Header, Perbill,
 	};
@@ -124,24 +124,46 @@ mod tests {
     }
 
 	#[test]
-	fn it_works_for_single_value() {
-		ExtBuilder::build().execute_with(|| {
+	fn add_member_err_works() {
+		ExtBuilder::build().execute_with(||{
+			assert_ok!(VecValueModule::add_member(Origin::signed(1)));
+			assert_err!(VecValueModule::add_member(Origin::signed(1)), "must not be a member to be added");
+		})
+	}
 
-			let sender = Origin::signed(1);
-
-			assert_ok!(VecValueModule::add_member(sender.clone()));
-			assert_ok!(VecValueModule::remove_member(sender.clone()));
-
+	#[test]
+	fn add_member_works() {
+		ExtBuilder::build().execute_with(||{
+			assert_ok!(VecValueModule::add_member(Origin::signed(1)));
 			let expected_event = TestEvent::vec_value_event(
 				RawEvent::MemberAdded(1),
 			);
-			assert!(System::events().iter().any(|a| a.event == expected_event));
-			let expected_event = TestEvent::vec_value_event(
-				RawEvent::MemberRemoved(1),
-			);
-			assert!(System::events().iter().any(|a| a.event == expected_event));
 
-		});
+			assert!(System::events().iter().any(|a| a.event == expected_event));
+			assert_eq!(VecValueModule::members(), vec![1]);
+		})	
+	}
+
+	#[test]
+	fn remove_member_err_works() {
+		ExtBuilder::build().execute_with(||{
+			assert_err!(
+				VecValueModule::remove_member(Origin::signed(2)),
+				"must be a member in order to leave"
+			)
+		})
+	}
+
+	#[test]
+	fn remove_member_works() {
+		ExtBuilder::build().execute_with(|| {
+			assert_ok!(VecValueModule::add_member(Origin::signed(1)));
+			assert_ok!(VecValueModule::remove_member(Origin::signed(1)));
+			assert_ok!(VecValueModule::add_member(Origin::signed(2)));
+			let expected_event = TestEvent::vec_value_event(RawEvent::MemberRemoved(1),);
+			assert!(System::events().iter().any(|a| a.event == expected_event));
+			assert_eq!(VecValueModule::members(), vec![2]);
+		})
 	}
 
 }
