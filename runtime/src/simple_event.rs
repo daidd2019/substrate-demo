@@ -8,7 +8,7 @@ pub trait Trait: system::Trait {
 }
 
 decl_storage! {
-	trait Store for Module<T: Trait> as TemplateModule {
+	trait Store for Module<T: Trait> as SimpleEventStorage {
 		Value get(fn value): Option<u32>;
 	}
 }
@@ -77,7 +77,7 @@ mod tests {
 	impl Trait for TestRuntime {
 		type Event = ();
 	}
-	type TemplateModule = Module<TestRuntime>;
+	type SimpleEventModule = Module<TestRuntime>;
 
 	pub struct ExtBuilder;
 	impl ExtBuilder {
@@ -92,8 +92,8 @@ mod tests {
 	#[test]
 	fn it_works_for_default_value() {
 		ExtBuilder::build().execute_with(|| {
-			assert_ok!(TemplateModule::set_value(Origin::signed(1), 42));
-			assert_eq!(TemplateModule::value(), Some(42));
+			assert_ok!(SimpleEventModule::set_value(Origin::signed(1), 42));
+			assert_eq!(SimpleEventModule::value(), Some(42));
 		});
 	}
 }

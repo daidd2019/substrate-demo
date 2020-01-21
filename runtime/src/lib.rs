@@ -68,6 +68,8 @@ mod template;
 
 mod simple_event;
 
+mod single_value;
+
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
 /// of data like extrinsics, allowing for them to continue syncing the network through upgrades
@@ -246,6 +248,10 @@ impl simple_event::Trait for Runtime {
 	type Event = Event;
 }
 
+impl single_value::Trait for Runtime {
+	type Event = Event;
+}
+
 construct_runtime!(
 	pub enum Runtime where
 		Block = Block,
@@ -263,7 +269,8 @@ construct_runtime!(
 		// Used for the module template in `./template.rs`
 		TemplateModule: template::{Module, Call, Storage, Event<T>},
 		RandomnessCollectiveFlip: randomness_collective_flip::{Module, Call, Storage},
-		SimpleeventModule: simple_event::{Module, Call, Event<T>},
+		SimpleEventModule: simple_event::{Module, Call, Event<T>},
+		SingleValueModule: single_value::{Module, Call, Storage, Event<T>},
 	}
 );
 
