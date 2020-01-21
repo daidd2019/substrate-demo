@@ -75,7 +75,7 @@ decl_event!(
 
 #[cfg(test)]
 mod tests {
-	use super::{Module, Trait};
+	use super::{Module, Trait, RawEvent};
 
 	use sp_core::H256;
 	use frame_support::{impl_outer_origin, impl_outer_event, assert_ok, parameter_types, weights::Weight};
@@ -114,13 +114,13 @@ mod tests {
 		type ModuleToIndex = ();
 	}
 
-	mod single_value {
+	mod single_value_event {
 		pub use crate::single_value::Event;
     }
 
     impl_outer_event! {
         pub enum TestEvent for TestRuntime {
-            single_value<T>,
+            single_value_event<T>,
         }
     }
 
@@ -142,10 +142,16 @@ mod tests {
     }
 
 	#[test]
-	fn it_works_for_default_value() {
+	fn it_works_for_set_value() {
 		ExtBuilder::build().execute_with(|| {
 			System::set_block_number(2);
 			assert_ok!(SingleValueModule::set_value(Origin::signed(1), 42));
+
+			let expected_event = TestEvent::single_value_event(
+				RawEvent::ValueSet(42, 2),
+			);
+
+			assert!(System::events().iter().any(|a| a.event == expected_event));
 
 		});
 	}
