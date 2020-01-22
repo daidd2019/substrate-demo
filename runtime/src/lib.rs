@@ -74,6 +74,8 @@ mod vec_set;
 
 mod simple_map;
 
+mod linked_map;
+
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
 /// of data like extrinsics, allowing for them to continue syncing the network through upgrades
@@ -264,6 +266,10 @@ impl simple_map::Trait for Runtime {
 	type Event = Event;
 }
 
+impl linked_map::Trait for Runtime {
+	type Event = Event;
+}
+
 construct_runtime!(
 	pub enum Runtime where
 		Block = Block,
@@ -285,6 +291,7 @@ construct_runtime!(
 		SingleValueModule: single_value::{Module, Call, Storage, Event<T>},
 		VecValueModule: vec_set::{Module, Call, Storage, Event<T>},
 		SimpleMapModule: simple_map::{Module, Call, Storage, Event<T>},
+		LinkedMapModule: linked_map::{Module, Call, Storage, Event<T>},
 	}
 );
 
